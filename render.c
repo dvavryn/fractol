@@ -6,7 +6,7 @@
 /*   By: dvavryn <dvavryn@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/28 21:31:13 by dvavryn           #+#    #+#             */
-/*   Updated: 2025/06/29 00:26:27 by dvavryn          ###   ########.fr       */
+/*   Updated: 2025/06/29 00:51:37 by dvavryn          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,10 @@ static void	draw(int x, int y, t_data *env)
 	t_complex		c;
 	size_t			i;
 
-	z.x = (scale(x, -2.5, 1.5) * env->zoom) + env->shift_x;
+	if (!ft_strcmp(env->name, "mandelbrot"))
+		z.x = (scale(x, -2.5, 1.5) * env->zoom) + env->shift_x;
+	else
+		z.x = (scale(x, -2.0, 2.0)) * env->zoom + env->shift_x;
 	z.y = (scale(y, 2.0, -2.0) * env->zoom) + env->shift_y;
 	man_or_jul(&z, &c, env);
 	i = 0;

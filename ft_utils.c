@@ -1,33 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strmapi.c                                       :+:      :+:    :+:   */
+/*   ft_utils.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dvavryn <dvavryn@student.42vienna.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/22 19:31:10 by dvavryn           #+#    #+#             */
-/*   Updated: 2025/05/21 23:54:35 by dvavryn          ###   ########.fr       */
+/*   Created: 2025/06/29 00:55:49 by dvavryn           #+#    #+#             */
+/*   Updated: 2025/06/29 00:58:32 by dvavryn          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../libft.h"
+#include "fractol.h"
 
-char	*ft_strmapi(char const *s, char (*f)(unsigned int, char))
+int	ft_isspace(int c)
 {
-	char			*map;
-	unsigned int	i;
+	return (((c >= 9 && c <= 13) || c == 32) * 1);
+}
 
-	if (!s || !f)
-		return (NULL);
-	map = (char *)malloc((ft_strlen(s) + 1) * sizeof(char));
-	if (!map)
-		return (NULL);
+int	ft_strcmp(const char *s1, const char *s2)
+{
+	size_t	i;
+
 	i = 0;
-	while (s[i] != '\0')
-	{
-		map[i] = f(i, s[i]);
+	while (s1[i] && s2[i] && s1[i] == s2[i])
 		i++;
-	}
-	map[i] = '\0';
-	return (map);
+	return (s1[i] - s2[i]);
 }
