@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   fractol.h                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dvavryn <dvavryn@student.42vienna.com>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/28 21:31:01 by dvavryn           #+#    #+#             */
+/*   Updated: 2025/06/28 23:59:56 by dvavryn          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef FRACTOL_H
 # define FRACTOL_H
 
@@ -8,32 +20,49 @@
 
 # include "../libft/libft.h"
 # include <mlx.h>
+# include <X11/keysym.h>
 
-# define ERROR_MSG "Please enter\n\t\"./fractol mandelbrot\" or \n\t\"./fractol julia <value_1> <value_2>\"\n"
-
+// window size
 # define WIDTH 800
 # define HEIGHT 800
 
-# define BLACK		0x00000000
-# define RED		0x00FF0000
-# define ORANGE		0x00FF7F00
-# define YELLOW		0x00FFFF00
-# define GREEN		0x0000FF00
-# define BLUE		0x000000FF
-# define INDIGO		0x004B0082
-# define VIOLET		0x008B00FF
-# define CYAN		0x0000FFFF
-# define MAGENTA	0x00FF00FF
-# define PINK		0x00FF007F
-# define WHITE		0x00FFFFFF
+// keys ... didnt want to use <X11/keysym.h>
+# define K_ESC 0xff1b
+# define K_UP 0xff52
+# define K_DOWN 0xff54
+# define K_LEFT 0xff51
+# define K_RIGHT 0xff53
+# define K_PLUS '='
+# define K_MINUS '-'
 
-// x real ; y i
-typedef struct	s_complex
+// mouse buttons .. scrollwheels
+# define M_UP 4
+# define M_DOWN 5
+
+// just black for now
+// felt cute today
+// maybe change later
+# define FRACT_COL 0x0
+
+/* 
+	t_complex
+	home of the read and imaginary coordinate
+	of a complex number
+	x real
+	y imaginary
+*/
+typedef struct s_complex
 {
 	double	x;
 	double	y;
+
 }	t_complex;
 
+/* 
+	t_img
+	home of the data required for an image
+	bpp - bytes per pixel
+*/
 typedef struct s_img
 {
 	void	*img;
@@ -41,33 +70,68 @@ typedef struct s_img
 	int		bpp;
 	int		line_len;
 	int		endian;
+
 }	t_img;
 
-typedef struct s_fractal
+/* 
+	t_data
+	home of MLX and some data required for
+	img calculations
+*/
+typedef struct s_data
 {
-	char	*name;
-	void	*mlx;
-	void	*win;
-	t_img	img;
-	double	escape_value;
-	int		iterations_definition;
-	double	shift_x;
-	double	shift_y;
-	double	zoom;
-	double	julia_x;
-	double	julia_y;
-}	t_fractal;
+	char			*name;
+	void			*mlx;
+	void			*win;
+	t_img			img;
 
-void	fractal_init(t_fractal *fract);
-int	fractal_render(t_fractal *fract);
-double	map(double unscaled_num, double new_min, double new_max, double old_min, double old_max);
-t_complex sum_complex(t_complex z1, t_complex z2);
-t_complex	square_complex(t_complex z);
+	double			escape;
+	unsigned int	iterations;
 
-int key_handler(int key, t_fractal *fract);
-int	mouse_handler(int button, int x, int y, t_fractal *fract);
-int close_handler(t_fractal *fract);
-int track_julia(int x, int y, t_fractal *fract);
-double	ft_atof(char *s);
+	double			shift_x;
+	double			shift_y;
+	double			zoom;
+
+	double			julia_x;
+	double			julia_y;
+
+}	t_data;
+
+// intit.c
+// intialising	tdata env; [pass &env]
+void			env_init(t_data *env);
+
+// render.c
+// render and put img to window
+int				render(t_data *env);
+
+// events.c
+// handle closing
+int				closing(t_data *env);
+// handle keypresses
+// K_UP, K_DOWN, K_LEFT, K_RIGHT, K_PLUS, K_MINUS, K_ESC
+int				key_handler(int key, t_data *env);
+// handle scrolling
+// M_UP, M_DOWN, x and y needed for not segfaulting (void)x; (void)y;
+int				mouse_handler(int button, int x, int y, t_data *env);
+
+// utils.c
+// scale coordinate system 2|2 to windowsize(HEIGHT, WIDTH)
+// WIDTH >= HEIGHT !!
+// based on HEIGHT!!
+double			scale(double unscaled_num, double new_min, double new_max);
+// basic argument to float
+double			ft_atof(char *s, size_t i);
+// add 2 complex numbers, z3 = z1 + z2
+// z3.x = z1.x + z2.x
+// z3.y = z1.y + z2.y
+t_complex		add_complex(t_complex z1, t_complex z2);
+// square a complex number, z2 = z1^2 || z2 = z1 * z1
+// z2.x = (z1.x * z1.x) - (z1.y * z1.y);
+// z2.y = 2 * z1.x * z1.y
+t_complex		square_complex(t_complex z);
+// math.h req! -- round()
+// gets a grey colorvalue based on current iteration to max_iteration
+int				grayscale(size_t i, unsigned int iterations);
 
 #endif

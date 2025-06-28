@@ -1,23 +1,34 @@
-#include "fractol.h"
-/* 
-	z = z^2 + c
-	(z initially 0)
-	c is the actual point
-*/
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   render.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dvavryn <dvavryn@student.42vienna.com>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/28 21:31:13 by dvavryn           #+#    #+#             */
+/*   Updated: 2025/06/29 00:26:27 by dvavryn          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-static void	my_pixel_put(int x, int y, t_img *img, int color)
+#include "fractol.h"
+
+// write color in the right data block of the address of the img
+// dst = addr + offset; offset is pos of exact pixel x|y
+static void	my_pixel_put(t_img *img, int x, int y, int color)
 {
-	char *dst;
+	char	*dst;
+
 	dst = img->addr + (y * img->line_len + x * (img->bpp / 8));
 	*(unsigned int *)dst = color;
 }
 
-static void	mandel_vs_julia(t_complex *z, t_complex *c, t_fractal *fract)
+// set the right values for julia and mandelbrot
+static void	man_or_jul(t_complex *z, t_complex *c, t_data *env)
 {
-	if (!ft_strcmp(fract->name, "julia"))
+	if (!ft_strcmp(env->name, "julia"))
 	{
-		c->x = fract->julia_x;
-		c->y = fract->julia_y;
+		c->x = env->julia_x;
+		c->y = env->julia_y;
 	}
 	else
 	{
@@ -26,36 +37,39 @@ static void	mandel_vs_julia(t_complex *z, t_complex *c, t_fractal *fract)
 	}
 }
 
-static void	handle_pixel(int x, int y, t_fractal *fract)
+// z.x shifted by -0,5 so its more centered, zoom and arrowoffset
+// set values depending on set
+// put pixel greyscale if escaped
+// if escaped, draw original in FRACT_COL
+static void	draw(int x, int y, t_data *env)
 {
-	t_complex z;
-	t_complex c;
-	int			i;
-	int			color;
+	t_complex		z;
+	t_complex		c;
+	size_t			i;
 
-	z.x = (map(x, -2.0, 2.0, 0, 799.0) * fract->zoom) + fract->shift_x;
-	z.y = (map(y, 2.0, -2.0, 0, 799.0) * fract->zoom) + fract->shift_y;
-	mandel_vs_julia(&z, &c, fract);
+	z.x = (scale(x, -2.5, 1.5) * env->zoom) + env->shift_x;
+	z.y = (scale(y, 2.0, -2.0) * env->zoom) + env->shift_y;
+	man_or_jul(&z, &c, env);
 	i = 0;
-	while (i < fract->iterations_definition)
+	while (i < env->iterations)
 	{
-		z = sum_complex(square_complex(z), c);
-		if ((z.x * z.x) + (z.y * z.y) > fract->escape_value)
+		z = add_complex(square_complex(z), c);
+		if ((z.x * z.x) + (z.y * z.y) > env->escape)
 		{
-			color = map(i, 0x00808080, WHITE, 0, fract->iterations_definition);
-			// color = 0x00808080;
-			my_pixel_put(x, y, &fract->img, color);
+			my_pixel_put(&env->img, x, y, grayscale(i, env->iterations));
 			return ;
 		}
 		i++;
 	}
-	my_pixel_put(x, y, &fract->img, BLACK);
+	my_pixel_put(&env->img, x, y, FRACT_COL);
 }
 
-int	fractal_render(t_fractal *fract)
+// render, draw pixel for every point on img, put img to window after
+// redo every loop_hook
+int	render(t_data *env)
 {
-	int	x;
-	int	y;
+	ssize_t	x;
+	ssize_t	y;
 
 	y = -1;
 	while (++y < HEIGHT)
@@ -63,9 +77,9 @@ int	fractal_render(t_fractal *fract)
 		x = -1;
 		while (++x < WIDTH)
 		{
-			handle_pixel(x, y, fract);
+			draw(x, y, env);
 		}
 	}
-	mlx_put_image_to_window(fract->mlx, fract->win, fract->img.img, 0, 0);
+	mlx_put_image_to_window(env->mlx, env->win, env->img.img, 0, 0);
 	return (0);
 }

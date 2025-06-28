@@ -1,52 +1,55 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   events.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dvavryn <dvavryn@student.42vienna.com>     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/06/28 21:31:04 by dvavryn           #+#    #+#             */
+/*   Updated: 2025/06/28 23:56:03 by dvavryn          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "fractol.h"
 
-int close_handler(t_fractal *fract)
+// closing and freeing the whole env
+int	closing(t_data *env)
 {
-	mlx_destroy_image(fract->mlx, fract->img.img);
-	mlx_destroy_window(fract->mlx, fract->win);
-	mlx_destroy_display(fract->mlx);
-	free(fract->mlx);
-	exit(EXIT_SUCCESS);
+	mlx_destroy_image(env->mlx, env->img.img);
+	mlx_destroy_window(env->mlx, env->win);
+	mlx_destroy_display(env->mlx);
+	free(env->mlx);
+	exit(0);
 }
 
-int key_handler(int key, t_fractal *fract)
+// handle keyinputs
+int	key_handler(int key, t_data *env)
 {
-	if (key == 65307)
-		close_handler(fract);
-	else if (key == 'w')
-		fract->shift_y += 0.1 * fract->zoom;
-	else if (key == 's')
-		fract->shift_y -= 0.1 * fract->zoom;
-	else if (key == 'a')
-		fract->shift_x -= 0.1 * fract->zoom;
-	else if (key == 'd')
-		fract->shift_x += 0.1 * fract->zoom;
-	else if (key == '=')
-		fract->iterations_definition +=10;
-	else if (key == '-' && fract->iterations_definition > 0)
-		fract->iterations_definition -=10;
-	else if (key == '.')
-		fract->iterations_definition +=2;
-	else if (key == ',' && fract->iterations_definition > 0)
-		fract->iterations_definition -=2;
+	if (key == K_ESC)
+		closing(env);
+	else if (key == K_UP)
+		env->shift_y += 0.1 * env->zoom;
+	else if (key == K_DOWN)
+		env->shift_y -= 0.1 * env->zoom;
+	else if (key == K_LEFT)
+		env->shift_x -= 0.1 * env->zoom;
+	else if (key == K_RIGHT)
+		env->shift_x += 0.1 * env->zoom;
+	else if (key == K_PLUS)
+		env->iterations += 10;
+	else if (key == K_MINUS && env->iterations > 0)
+		env->iterations -= 10;
 	return (0);
 }
 
-int	mouse_handler(int button, int x, int y, t_fractal *fract)
+// handle mouse inputs
+int	mouse_handler(int button, int x, int y, t_data *env)
 {
-	if (button == 4)
-		fract->zoom *= 0.9;
-	else if (button == 5)
-		fract->zoom /= 0.9;
-	return (0);
-}
-
-int track_julia(int x, int y, t_fractal *fract)
-{
-	if (!ft_strcmp(fract->name, "julia"))
-	{
-		fract->julia_x = map(x, -2.0, 2.0, 0, WIDTH) * fract->zoom + fract->shift_x;
-		fract->julia_y = map(y, 2.0, -2.0, 0, HEIGHT) * fract->zoom + fract->shift_y;
-	}
+	(void)x;
+	(void)y;
+	if (button == M_UP)
+		env->zoom *= 0.9;
+	else if (button == M_DOWN)
+		env->zoom /= 0.9;
 	return (0);
 }
